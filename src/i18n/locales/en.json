@@ -132,6 +132,10 @@
     "sound": "Sound",
     "notificationsDenied": "The browser blocked notifications."
   },
+  "offline": {
+    "banner": "Offline",
+    "queued": "{{count}} queued"
+  },
   "language": {
     "label": "Language",
     "es": "Spanish",

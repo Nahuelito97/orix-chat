@@ -4,6 +4,7 @@ import { socketService } from '../../../services/socket.service'
 import { chatsService } from '../../../services/chats.service'
 import { queryKeys } from '../../../lib/queryKeys'
 import { useChatStore } from '../store/chatStore'
+import { useOutboxStore } from '../../offline/store/outboxStore'
 import type { ChatSummary, UserMini } from '../../../types'
 
 export function useChatActions() {
@@ -72,7 +73,14 @@ export function useChatActions() {
     }) => {
       const active = useChatStore.getState().activeChat
       if (!active) return
-      socketService.get()?.emit('message:send', { chatId: active.id, ...input })
+      const socket = socketService.get()
+      const payload = { chatId: active.id, ...input }
+      if (socket?.connected) {
+        socket.emit('message:send', payload)
+      } else {
+        // Sin conexión: a la cola, se envía al reconectar.
+        useOutboxStore.getState().enqueue(payload)
+      }
     },
     [],
   )

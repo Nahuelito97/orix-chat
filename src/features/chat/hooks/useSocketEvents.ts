@@ -5,6 +5,7 @@ import { queryKeys } from '../../../lib/queryKeys'
 import { useAuthStore } from '../../auth/store/authStore'
 import { useChatStore } from '../store/chatStore'
 import { useSettingsStore } from '../../settings/store/settingsStore'
+import { useOutboxStore } from '../../offline/store/outboxStore'
 import { notificationsService } from '../../../services/notifications.service'
 import type { MessagePage } from './useMessages'
 import type { ChatMessage } from '../../../types'
@@ -127,6 +128,15 @@ export function useSocketEvents() {
       const onBump = () =>
         void queryClient.invalidateQueries({ queryKey: queryKeys.chats })
 
+      // Conexión: marca online y vacía la cola offline.
+      const onConnect = () => {
+        useOutboxStore.getState().setOnline(true)
+        const { queue, clear } = useOutboxStore.getState()
+        queue.forEach((msg) => socket.emit('message:send', msg))
+        if (queue.length) clear()
+      }
+      const onDisconnect = () => useOutboxStore.getState().setOnline(false)
+
       const onGone = ({ chatId }: { chatId: string }) => {
         // Si tenía ese chat abierto, lo cierro.
         if (useChatStore.getState().activeChat?.id === chatId) {
@@ -143,6 +153,9 @@ export function useSocketEvents() {
       socket.on('delivered', onDelivered)
       socket.on('chat:bump', onBump)
       socket.on('chat:gone', onGone)
+      socket.on('connect', onConnect)
+      socket.on('disconnect', onDisconnect)
+      if (socket.connected) onConnect()
 
       cleanup = () => {
         socket.off('message:new', onNew)
@@ -153,6 +166,8 @@ export function useSocketEvents() {
         socket.off('delivered', onDelivered)
         socket.off('chat:bump', onBump)
         socket.off('chat:gone', onGone)
+        socket.off('connect', onConnect)
+        socket.off('disconnect', onDisconnect)
       }
     })
 
