@@ -3,6 +3,7 @@ import { useChatStore } from '../store/chatStore'
 import { useCallEvents } from '../../call/hooks/useCallEvents'
 import CallOverlay from '../../call/components/CallOverlay'
 import OfflineBanner from '../../offline/components/OfflineBanner'
+import BotWidget from '../../bot/components/BotWidget'
 import Sidebar from '../components/Sidebar'
 import ConversationPanel from '../components/ConversationPanel'
 import ProfilePanel from '../components/ProfilePanel'
@@ -28,6 +29,7 @@ export default function ChatPage() {
       </div>
       <CallOverlay />
       <OfflineBanner />
+      <BotWidget />
     </div>
   )
 }

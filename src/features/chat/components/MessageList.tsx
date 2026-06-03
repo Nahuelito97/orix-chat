@@ -79,7 +79,7 @@ export default function MessageList({
       <div
         ref={scrollRef}
         onScroll={handleScroll}
-        className="flex h-full flex-col-reverse gap-1 overflow-y-auto px-4 py-4"
+        className="flex h-full flex-col-reverse gap-3 overflow-y-auto px-4 py-4"
       >
         {visible.map((m) => (
           <MessageBubble

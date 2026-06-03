@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'react-toastify'
+import Avatar from '../../../components/ui/Avatar'
 import { formatTime } from '../utils/chat'
 import { formatText } from '../utils/format'
 import { aiService } from '../../../services/ai.service'
@@ -26,7 +27,6 @@ interface Props {
 export default function MessageBubble({
   msg,
   mine,
-  isGroup,
   seen,
   delivered,
   myId,
@@ -44,6 +44,7 @@ export default function MessageBubble({
   const tick = seen ? '✓✓' : delivered ? '✓✓' : '✓'
   const firstUrl =
     !msg.deleted && msg.text ? msg.text.match(/https?:\/\/[^\s]+/)?.[0] : undefined
+  const isImage = !msg.deleted && !!msg.image
 
   async function handleTranslate() {
     if (!msg.text) return
@@ -58,97 +59,116 @@ export default function MessageBubble({
     }
   }
 
+  const bubbleClass = isImage
+    ? 'bg-transparent p-0'
+    : mine
+      ? 'bg-primary/20 px-3.5 py-2'
+      : 'bg-surface-variant px-3.5 py-2'
+  const radius = mine ? 'rounded-2xl rounded-tr-sm' : 'rounded-2xl rounded-tl-sm'
+
   return (
-    <div className={`group flex ${mine ? 'justify-end' : 'justify-start'}`}>
-      <div className="flex max-w-[80%] flex-col">
+    <div className={`group flex gap-2 ${mine ? 'justify-end' : 'justify-start'}`}>
+      {!mine && (
+        <Avatar
+          src={msg.sender.avatar}
+          name={senderName(msg.sender)}
+          size={30}
+        />
+      )}
+
+      <div className="flex max-w-[78%] flex-col">
+        {/* Caption: nombre · hora · estado */}
         <div
-          className={`relative rounded-2xl px-3.5 py-2 text-sm ${
-            mine
-              ? 'rounded-br-md bg-primary text-on-accent'
-              : 'rounded-bl-md bg-surface text-content'
+          className={`mb-1 flex items-center gap-1.5 text-[11px] text-content-muted ${
+            mine ? 'justify-end' : ''
           }`}
         >
-          {isGroup && !mine && (
-            <p className="mb-0.5 text-xs font-semibold text-primary">
+          {!mine && (
+            <span className="font-medium text-content">
               {senderName(msg.sender)}
-            </p>
+            </span>
           )}
-
-          {/* Cita del mensaje respondido */}
-          {msg.replyTo && (
-            <div
-              className={`mb-1 rounded-lg border-l-2 px-2 py-1 text-xs ${
-                mine
-                  ? 'border-on-accent/50 bg-on-accent/10'
-                  : 'border-primary/60 bg-bg/60'
-              }`}
+          <span>{formatTime(msg.createdAt)}</span>
+          {msg.edited && !msg.deleted && <span>· {t('chat.edited')}</span>}
+          {msg.pinned && <span title={t('chat.pinned')}>📌</span>}
+          {msg.expiresAt && <span title={t('chat.temporary')}>⏱</span>}
+          {mine && !msg.deleted && (
+            <span
+              title={seen ? t('chat.seen') : delivered ? t('chat.delivered') : t('chat.sent')}
+              className={seen ? 'text-syncing' : ''}
             >
-              <span className="block font-medium opacity-80">
-                {senderName(msg.replyTo.sender)}
-              </span>
-              <span className="block truncate opacity-70">
-                {msg.replyTo.deleted
-                  ? t('chat.lastMessageDeleted')
-                  : msg.replyTo.text || (msg.replyTo.image ? t('chat.image') : '')}
-              </span>
-            </div>
+              {tick}
+            </span>
           )}
+        </div>
 
-          {/* Contenido */}
-          {msg.deleted ? (
-            <p className="italic opacity-60">{t('chat.messageDeleted')}</p>
-          ) : msg.image ? (
-            <img src={msg.image} alt="" className="max-h-60 rounded-lg" />
-          ) : msg.audioUrl ? (
-            <audio controls src={msg.audioUrl} className="max-w-[220px]" />
-          ) : msg.fileUrl ? (
-            <a
-              href={msg.fileUrl}
-              target="_blank"
-              rel="noreferrer"
-              className="flex items-center gap-2 rounded-lg bg-bg/40 px-2 py-1.5 underline-offset-2 hover:underline"
-            >
-              <span className="text-lg">📎</span>
-              <span className="truncate">{msg.fileName || t('chat.file')}</span>
-            </a>
-          ) : (
-            <p className="whitespace-pre-wrap break-words">
-              {msg.text ? formatText(msg.text) : null}
-            </p>
-          )}
-
-          {firstUrl && <LinkPreview url={firstUrl} />}
-
-          {translation && (
-            <p
-              className={`mt-1 border-t pt-1 text-sm italic ${
-                mine ? 'border-on-accent/20' : 'border-outline'
-              }`}
-            >
-              🌐 {translation}
-            </p>
-          )}
-
-          <p
-            className={`mt-1 flex items-center justify-end gap-1 text-[10px] ${
-              mine ? 'text-on-accent/70' : 'text-content-muted'
-            }`}
-          >
-            {msg.pinned && <span title={t('chat.pinned')}>📌</span>}
-            {msg.expiresAt && <span title={t('chat.temporary')}>⏱</span>}
-            {msg.edited && !msg.deleted && <span>{t('chat.edited')}</span>}
-            <span>{formatTime(msg.createdAt)}</span>
-            {mine && !msg.deleted && (
-              <span
-                title={
-                  seen ? t('chat.seen') : delivered ? t('chat.delivered') : t('chat.sent')
-                }
-                className={seen ? 'text-syncing' : ''}
-              >
-                {tick}
-              </span>
+        {/* Burbuja + acciones */}
+        <div className="relative flex items-center">
+          <div className={`text-sm text-content ${bubbleClass} ${radius}`}>
+            {/* Cita del mensaje respondido */}
+            {msg.replyTo && (
+              <div className="mb-1 rounded-lg border-l-2 border-primary/60 bg-bg/50 px-2 py-1 text-xs">
+                <span className="block font-medium opacity-80">
+                  {senderName(msg.replyTo.sender)}
+                </span>
+                <span className="block truncate opacity-70">
+                  {msg.replyTo.deleted
+                    ? t('chat.lastMessageDeleted')
+                    : msg.replyTo.text || (msg.replyTo.image ? t('chat.image') : '')}
+                </span>
+              </div>
             )}
-          </p>
+
+            {/* Contenido */}
+            {msg.deleted ? (
+              <p className="italic opacity-60">{t('chat.messageDeleted')}</p>
+            ) : msg.image ? (
+              <img
+                src={msg.image}
+                alt=""
+                className="max-h-72 rounded-2xl object-cover"
+              />
+            ) : msg.audioUrl ? (
+              <audio controls src={msg.audioUrl} className="max-w-[240px]" />
+            ) : msg.fileUrl ? (
+              <a
+                href={msg.fileUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="flex items-center gap-2 rounded-lg bg-bg/40 px-2 py-1.5 underline-offset-2 hover:underline"
+              >
+                <span className="text-lg">📎</span>
+                <span className="truncate">{msg.fileName || t('chat.file')}</span>
+              </a>
+            ) : (
+              <p className="whitespace-pre-wrap break-words">
+                {msg.text ? formatText(msg.text) : null}
+              </p>
+            )}
+
+            {firstUrl && <LinkPreview url={firstUrl} />}
+
+            {translation && (
+              <p className="mt-1 border-t border-outline/40 pt-1 text-sm italic">
+                🌐 {translation}
+              </p>
+            )}
+          </div>
+
+          {!msg.deleted && (
+            <MessageActions
+              mine={mine}
+              pinned={msg.pinned}
+              canTranslate={!!msg.text}
+              onReply={onReply}
+              onEdit={onEdit}
+              onDelete={onDelete}
+              onReact={onReact}
+              onPin={onPin}
+              onForward={onForward}
+              onTranslate={handleTranslate}
+            />
+          )}
         </div>
 
         {/* Reacciones */}
@@ -172,21 +192,6 @@ export default function MessageBubble({
           </div>
         )}
       </div>
-
-      {!msg.deleted && (
-        <MessageActions
-          mine={mine}
-          pinned={msg.pinned}
-          canTranslate={!!msg.text}
-          onReply={onReply}
-          onEdit={onEdit}
-          onDelete={onDelete}
-          onReact={onReact}
-          onPin={onPin}
-          onForward={onForward}
-          onTranslate={handleTranslate}
-        />
-      )}
     </div>
   )
 }

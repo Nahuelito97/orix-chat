@@ -38,8 +38,12 @@ export default function Sidebar() {
   const search = useUserSearch(term)
   const messageSearch = useGlobalSearch(term)
 
-  const activeChats = chats.filter((c) => !c.archived)
-  const archivedChats = chats.filter((c) => c.archived)
+  // OrixBot vive en el widget flotante, no en la lista.
+  const listChats = chats.filter(
+    (c) => !(!c.isGroup && c.other?.username === 'orixbot'),
+  )
+  const activeChats = listChats.filter((c) => !c.archived)
+  const archivedChats = listChats.filter((c) => c.archived)
 
   async function startChat(user: UserMini) {
     await openChatWithUser(user)

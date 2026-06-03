@@ -98,6 +98,12 @@
     "usersSection": "Users",
     "messagesSection": "Messages"
   },
+  "bot": {
+    "help": "Help",
+    "subtitle": "Assistant · always available",
+    "empty": "Hi 👋 Ask me anything.",
+    "placeholder": "Type your question…"
+  },
   "ai": {
     "summarize": "Summarize conversation",
     "summaryTitle": "Summary",
