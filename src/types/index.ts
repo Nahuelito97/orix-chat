@@ -52,6 +52,7 @@ export interface ChatMessage {
   pinned: boolean
   deleted: boolean
   edited: boolean
+  expiresAt: string | null
   createdAt: string // ISO
   replyTo: ReplyPreview | null
   reactions: Reaction[]

@@ -7,6 +7,7 @@ import Input from '../../../components/ui/Input'
 import { useAuth } from '../../auth/hooks/useAuth'
 import { useChats } from '../hooks/useChats'
 import { useUserSearch } from '../hooks/useUserSearch'
+import { useGlobalSearch } from '../hooks/useGlobalSearch'
 import { useChatActions } from '../hooks/useChatActions'
 import { useChatStore } from '../store/chatStore'
 import { isUserOnline } from '../utils/chat'
@@ -20,8 +21,13 @@ export default function Sidebar() {
   const { t } = useTranslation()
   const { logout } = useAuth()
   const { data: chats = [] } = useChats()
-  const { openChat, openChatWithUser, togglePinChat, toggleArchiveChat } =
-    useChatActions()
+  const {
+    openChat,
+    openChatById,
+    openChatWithUser,
+    togglePinChat,
+    toggleArchiveChat,
+  } = useChatActions()
   const activeChat = useChatStore((s) => s.activeChat)
   const presence = useChatStore((s) => s.presence)
 
@@ -30,6 +36,7 @@ export default function Sidebar() {
   const [groupOpen, setGroupOpen] = useState(false)
   const [showArchived, setShowArchived] = useState(false)
   const search = useUserSearch(term)
+  const messageSearch = useGlobalSearch(term)
 
   const activeChats = chats.filter((c) => !c.archived)
   const archivedChats = chats.filter((c) => c.archived)
@@ -101,11 +108,40 @@ export default function Sidebar() {
       {/* Resultados / lista */}
       <div className="flex-1 overflow-y-auto">
         {term.trim() ? (
-          <UserSearchResults
-            loading={search.isFetching}
-            results={search.data ?? []}
-            onPick={startChat}
-          />
+          <>
+            <p className="px-4 pt-2 text-xs font-semibold uppercase tracking-wide text-content-muted">
+              {t('chat.usersSection')}
+            </p>
+            <UserSearchResults
+              loading={search.isFetching}
+              results={search.data ?? []}
+              onPick={startChat}
+            />
+            {(messageSearch.data?.length ?? 0) > 0 && (
+              <>
+                <p className="px-4 pt-3 text-xs font-semibold uppercase tracking-wide text-content-muted">
+                  {t('chat.messagesSection')}
+                </p>
+                <ul>
+                  {messageSearch.data!.map((r) => (
+                    <li key={r.id}>
+                      <button
+                        onClick={() => void openChatById(r.chatId)}
+                        className="block w-full px-4 py-2 text-left hover:bg-surface-variant"
+                      >
+                        <span className="block truncate text-sm font-medium">
+                          {r.chatName}
+                        </span>
+                        <span className="block truncate text-xs text-content-muted">
+                          {r.text}
+                        </span>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </>
+            )}
+          </>
         ) : (
           <ul>
             {activeChats.map((chat) => (

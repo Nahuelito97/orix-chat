@@ -70,6 +70,7 @@ export function useChatActions() {
       fileUrl?: string
       fileName?: string
       replyToId?: string
+      ttlSeconds?: number
     }) => {
       const active = useChatStore.getState().activeChat
       if (!active) return

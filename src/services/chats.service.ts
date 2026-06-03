@@ -15,4 +15,17 @@ export const chatsService = {
     http.get<ChatMessage[]>(
       `/chats/${chatId}/search?q=${encodeURIComponent(q)}`,
     ),
+  searchGlobal: (q: string) =>
+    http.get<GlobalMessageResult[]>(
+      `/chats/search/global?q=${encodeURIComponent(q)}`,
+    ),
+}
+
+export interface GlobalMessageResult {
+  id: string
+  chatId: string
+  text: string | null
+  createdAt: string
+  sender: { id: string; username: string; name: string }
+  chatName: string
 }

@@ -10,35 +10,56 @@ import Button from '../../../components/ui/Button'
 import EmojiPicker from './EmojiPicker'
 import GifPicker from './GifPicker'
 import { useVoiceRecorder } from '../hooks/useVoiceRecorder'
+import type { UserMini } from '../../../types'
 
 interface Props {
   value: string
   editing: boolean
   uploading: boolean
+  temporary: boolean
+  mentionables: UserMini[]
   onChange: (value: string) => void
   onSubmit: () => void
   onPickImage: (file: File) => void
   onPickFile: (file: File) => void
   onPickGif: (url: string) => void
   onSendVoice: (blob: Blob) => void
+  onToggleTemporary: () => void
 }
 
 export default function MessageComposer({
   value,
   editing,
   uploading,
+  temporary,
+  mentionables,
   onChange,
   onSubmit,
   onPickImage,
   onPickFile,
   onPickGif,
   onSendVoice,
+  onToggleTemporary,
 }: Props) {
   const { t } = useTranslation()
   const [emojiOpen, setEmojiOpen] = useState(false)
   const [gifOpen, setGifOpen] = useState(false)
   const [dragging, setDragging] = useState(false)
   const recorder = useVoiceRecorder()
+
+  // Autocompletado de menciones: detecta @palabra al final del texto.
+  const mentionMatch = value.match(/@([a-zA-Z0-9_]*)$/)
+  const mentionQuery = mentionMatch?.[1].toLowerCase() ?? null
+  const mentionOptions =
+    mentionQuery !== null
+      ? mentionables
+          .filter((u) => u.username.toLowerCase().startsWith(mentionQuery))
+          .slice(0, 5)
+      : []
+
+  function pickMention(username: string) {
+    onChange(value.replace(/@([a-zA-Z0-9_]*)$/, `@${username} `))
+  }
 
   function handleKeyDown(e: KeyboardEvent<HTMLTextAreaElement>) {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -119,6 +140,22 @@ export default function MessageComposer({
         dragging ? 'border-primary bg-primary/5' : 'border-outline'
       }`}
     >
+      {mentionOptions.length > 0 && (
+        <div className="absolute bottom-full left-3 mb-1 w-56 overflow-hidden rounded-xl border border-outline bg-surface shadow-xl">
+          {mentionOptions.map((u) => (
+            <button
+              key={u.id}
+              type="button"
+              onClick={() => pickMention(u.username)}
+              className="block w-full px-3 py-2 text-left text-sm hover:bg-surface-variant"
+            >
+              <span className="font-medium">@{u.username}</span>
+              {u.name ? <span className="text-content-muted"> · {u.name}</span> : null}
+            </button>
+          ))}
+        </div>
+      )}
+
       <button
         type="button"
         onClick={() => setEmojiOpen((o) => !o)}
@@ -172,6 +209,17 @@ export default function MessageComposer({
           if (f) onPickFile(f)
         }} />
       </label>
+
+      <button
+        type="button"
+        onClick={onToggleTemporary}
+        title={t('chat.temporary')}
+        className={`rounded-lg px-1.5 py-1.5 text-xl transition ${
+          temporary ? 'text-primary' : 'text-content-muted hover:text-primary'
+        }`}
+      >
+        ⏱
+      </button>
 
       <textarea
         rows={1}

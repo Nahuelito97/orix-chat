@@ -1,4 +1,4 @@
-import { useRef, useState, type UIEvent } from 'react'
+import { useEffect, useRef, useState, type UIEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import MessageBubble from './MessageBubble'
 import type { ChatMessage } from '../../../types'
@@ -40,6 +40,16 @@ export default function MessageList({
   const scrollRef = useRef<HTMLDivElement>(null)
   const [showJump, setShowJump] = useState(false)
 
+  // Tick para ocultar en vivo los mensajes temporales vencidos.
+  const [now, setNow] = useState(() => Date.now())
+  useEffect(() => {
+    const id = setInterval(() => setNow(Date.now()), 15_000)
+    return () => clearInterval(id)
+  }, [])
+  const visible = messages.filter(
+    (m) => !m.expiresAt || new Date(m.expiresAt).getTime() > now,
+  )
+
   function seen(msg: ChatMessage): boolean {
     return !!otherLastRead && new Date(otherLastRead) >= new Date(msg.createdAt)
   }
@@ -71,7 +81,7 @@ export default function MessageList({
         onScroll={handleScroll}
         className="flex h-full flex-col-reverse gap-1 overflow-y-auto px-4 py-4"
       >
-        {messages.map((m) => (
+        {visible.map((m) => (
           <MessageBubble
             key={m.id}
             msg={m}
@@ -94,7 +104,7 @@ export default function MessageList({
             {t('common.loading')}
           </p>
         )}
-        {messages.length === 0 && (
+        {visible.length === 0 && (
           <p className="my-auto text-center text-sm text-content-muted">
             {t('chat.noMessages')}
           </p>

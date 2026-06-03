@@ -40,6 +40,7 @@ export interface ClientEvents {
     fileUrl?: string
     fileName?: string
     replyToId?: string
+    ttlSeconds?: number
   }) => void
   'message:edit': (p: { messageId: string; text: string }) => void
   'message:delete': (p: { messageId: string }) => void

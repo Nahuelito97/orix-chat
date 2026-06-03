@@ -2,7 +2,7 @@ import type { ReactNode } from 'react'
 
 // Negrita, itálica, tachado, código inline y links autodetectados.
 const TOKEN =
-  /(\*\*[^*\n]+\*\*|__[^_\n]+__|\*[^*\n]+\*|_[^_\n]+_|~~[^~\n]+~~|`[^`\n]+`|https?:\/\/[^\s]+)/g
+  /(\*\*[^*\n]+\*\*|__[^_\n]+__|\*[^*\n]+\*|_[^_\n]+_|~~[^~\n]+~~|`[^`\n]+`|https?:\/\/[^\s]+|@[a-zA-Z0-9_]{2,})/g
 
 /**
  * Formato inline tipo markdown, seguro (construye nodos React, no HTML).
@@ -29,6 +29,12 @@ export function formatText(text: string): ReactNode[] {
         <code key={key} className="rounded bg-black/20 px-1 font-mono text-[0.85em]">
           {tok.slice(1, -1)}
         </code>,
+      )
+    } else if (tok.startsWith('@')) {
+      out.push(
+        <span key={key} className="rounded bg-primary/20 px-0.5 font-medium">
+          {tok}
+        </span>,
       )
     } else if (tok.startsWith('http')) {
       out.push(

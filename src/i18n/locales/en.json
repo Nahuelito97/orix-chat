@@ -93,7 +93,10 @@
     "unpinChat": "Unpin chat",
     "archive": "Archive",
     "unarchive": "Unarchive",
-    "archived": "Archived"
+    "archived": "Archived",
+    "temporary": "Disappearing message",
+    "usersSection": "Users",
+    "messagesSection": "Messages"
   },
   "ai": {
     "summarize": "Summarize conversation",

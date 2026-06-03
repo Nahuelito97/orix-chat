@@ -49,6 +49,9 @@ export default function ConversationPanel() {
   const [summary, setSummary] = useState<string | null>(null)
   const [summarizing, setSummarizing] = useState(false)
   const [suggestions, setSuggestions] = useState<string[]>([])
+  const [temporary, setTemporary] = useState(false)
+  const TEMP_TTL = 300 // 5 min
+  const ttl = () => (temporary ? TEMP_TTL : undefined)
   const lastTypingWrite = useRef(0)
   const typingOffTimer = useRef<ReturnType<typeof setTimeout>>(undefined)
 
@@ -85,7 +88,7 @@ export default function ConversationPanel() {
       editMessage(editing.id, value)
       setEditing(null)
     } else {
-      sendMessage({ text: value, replyToId: replyTo?.id })
+      sendMessage({ text: value, replyToId: replyTo?.id, ttlSeconds: ttl() })
       setReplyTo(null)
     }
     setText('')
@@ -96,7 +99,7 @@ export default function ConversationPanel() {
     setUploading(true)
     try {
       const url = await uploadFile(file, 'messages')
-      sendMessage({ image: url, replyToId: replyTo?.id })
+      sendMessage({ image: url, replyToId: replyTo?.id, ttlSeconds: ttl() })
       setReplyTo(null)
     } catch {
       toast.error(t('chat.imageError'))
@@ -109,7 +112,12 @@ export default function ConversationPanel() {
     setUploading(true)
     try {
       const url = await uploadFile(file, 'files')
-      sendMessage({ fileUrl: url, fileName: file.name, replyToId: replyTo?.id })
+      sendMessage({
+        fileUrl: url,
+        fileName: file.name,
+        replyToId: replyTo?.id,
+        ttlSeconds: ttl(),
+      })
       setReplyTo(null)
     } catch {
       toast.error(t('chat.imageError'))
@@ -119,7 +127,7 @@ export default function ConversationPanel() {
   }
 
   function pickGif(url: string) {
-    sendMessage({ image: url, replyToId: replyTo?.id })
+    sendMessage({ image: url, replyToId: replyTo?.id, ttlSeconds: ttl() })
     setReplyTo(null)
   }
 
@@ -130,7 +138,7 @@ export default function ConversationPanel() {
         type: 'audio/webm',
       })
       const url = await uploadFile(file, 'audio')
-      sendMessage({ audioUrl: url, replyToId: replyTo?.id })
+      sendMessage({ audioUrl: url, replyToId: replyTo?.id, ttlSeconds: ttl() })
       setReplyTo(null)
     } catch {
       toast.error(t('chat.imageError'))
@@ -245,12 +253,19 @@ export default function ConversationPanel() {
             value={text}
             editing={!!editing}
             uploading={uploading}
+            temporary={temporary}
+            mentionables={
+              activeChat.isGroup
+                ? activeChat.participants.filter((p) => p.id !== user.id)
+                : []
+            }
             onChange={handleType}
             onSubmit={submit}
             onPickImage={pickImage}
             onPickFile={pickAttachment}
             onPickGif={pickGif}
             onSendVoice={sendVoice}
+            onToggleTemporary={() => setTemporary((v) => !v)}
           />
         </>
       )}

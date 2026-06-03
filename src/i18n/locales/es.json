@@ -93,7 +93,10 @@
     "unpinChat": "Desfijar chat",
     "archive": "Archivar",
     "unarchive": "Desarchivar",
-    "archived": "Archivados"
+    "archived": "Archivados",
+    "temporary": "Mensaje temporal (se borra solo)",
+    "usersSection": "Usuarios",
+    "messagesSection": "Mensajes"
   },
   "ai": {
     "summarize": "Resumir conversación",

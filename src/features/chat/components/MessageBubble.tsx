@@ -5,6 +5,7 @@ import { formatTime } from '../utils/chat'
 import { formatText } from '../utils/format'
 import { aiService } from '../../../services/ai.service'
 import MessageActions from './MessageActions'
+import LinkPreview from './LinkPreview'
 import type { ChatMessage } from '../../../types'
 
 interface Props {
@@ -41,6 +42,8 @@ export default function MessageBubble({
   const senderName = (s: { name: string; username: string }) =>
     s.name || `@${s.username}`
   const tick = seen ? '✓✓' : delivered ? '✓✓' : '✓'
+  const firstUrl =
+    !msg.deleted && msg.text ? msg.text.match(/https?:\/\/[^\s]+/)?.[0] : undefined
 
   async function handleTranslate() {
     if (!msg.text) return
@@ -114,6 +117,8 @@ export default function MessageBubble({
             </p>
           )}
 
+          {firstUrl && <LinkPreview url={firstUrl} />}
+
           {translation && (
             <p
               className={`mt-1 border-t pt-1 text-sm italic ${
@@ -130,6 +135,7 @@ export default function MessageBubble({
             }`}
           >
             {msg.pinned && <span title={t('chat.pinned')}>📌</span>}
+            {msg.expiresAt && <span title={t('chat.temporary')}>⏱</span>}
             {msg.edited && !msg.deleted && <span>{t('chat.edited')}</span>}
             <span>{formatTime(msg.createdAt)}</span>
             {mine && !msg.deleted && (
