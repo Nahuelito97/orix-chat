@@ -1,42 +1,72 @@
 # OrixChat 💬
 
-Chat full-stack en **tiempo real** con **React 19 + TypeScript + Vite + Firebase**, tema **Orix Dusk** (índigo + peach/coral, dark-first). Inspirado en el tutorial de GreatStack, reescrito en TS y con la paleta Orix.
+Chat **full-stack en tiempo real** con tema **Orix** (índigo + peach/coral, claro y oscuro). Mensajería 1-a-1 y grupal, reacciones, respuestas, edición, recibos de lectura, llamadas y mucho más.
 
-## Features
+Este repo es el **frontend**. El backend vive en [orix-chat-api](https://github.com/Nahuelito97/orix-chat-api).
 
-- 🔐 Registro / login con **Firebase Auth** (email + contraseña)
-- ⚡ Mensajes en **tiempo real** con `onSnapshot` de Firestore
-- 🔎 Buscar usuarios por `@username` y crear chats
-- 🖼️ Enviar imágenes (avatar + mensajes) con **Firebase Storage**
-- 🟢 Estado "en línea" por `lastSeen` (heartbeat cada 60s)
-- 👤 Edición de perfil (nombre, bio, avatar)
-- ✅ Marcado de "no leído" por chat
+## Arquitectura
+
+Híbrido: **Firebase Auth** (login) + **backend NestJS propio** (datos y realtime).
+
+```
+┌──────────────┐  Firebase ID token (Bearer)   ┌──────────────────────┐
+│  Front        │ ─────────────────────────────▶│  NestJS API          │
+│  React + Vite │   REST (perfil, historial)     │  - verifica token     │
+│  Firebase Auth│ ◀─────────────────────────────▶│  - Prisma + Postgres  │
+│  (Google/mail)│   WebSocket (mensajes, typing, │  - Socket.IO gateway  │
+└──────────────┘    presencia, reacciones…)      └──────────────────────┘
+```
 
 ## Stack
 
-| Capa    | Tecnología                          |
-| ------- | ----------------------------------- |
-| Front   | React 19, TypeScript, Vite          |
-| Estilos | Tailwind v4 (`@theme` Orix)         |
-| Backend | Firebase Auth · Firestore · Storage |
-| Routing | react-router-dom                    |
-| Notifs  | react-toastify                      |
+| Capa | Tecnología |
+| --- | --- |
+| Framework | React 19 + TypeScript + Vite |
+| Estilos | Tailwind v4 (`@theme` Orix, claro/oscuro) |
+| Server-state | TanStack Query |
+| Client/UI-state | Zustand |
+| Realtime | socket.io-client |
+| Auth + Storage | Firebase |
+| i18n | i18next (es / en) |
+
+## Features
+
+- 🔐 Login con **Google** y email/contraseña · reset de contraseña · verificación de email
+- 💬 Chats **1-a-1 y grupales** (crear grupo, administrar miembros, salir)
+- ⚡ Mensajes en tiempo real: texto, **imágenes** y **archivos**
+- 😀 **Reacciones**, **responder** (cita), **editar/borrar**, **fijar**, **reenviar**
+- ✓✓ Recibos de **enviado / entregado / visto** · indicador "escribiendo…" · presencia online
+- 🔎 Búsqueda de usuarios y **búsqueda dentro del chat**
+- 🔔 Notificaciones del navegador + sonido · **silenciar** chats
+- 🧭 Infinite-scroll del historial · emoji picker · drag & drop / pegar imágenes
+- 🌗 Tema **claro/oscuro** · 🌐 **i18n** español / inglés
+
+## Estructura
+
+```
+src/
+  app/        providers · queryClient · router · ProtectedRoute
+  config/     env tipada · firebase (init)
+  i18n/       i18next + locales/{es,en}.json
+  services/   capa pura: http · auth · users · chats · socket · storage
+  features/
+    auth/     hooks · components · pages · store
+    chat/     hooks · components · store · utils · pages
+    profile/  hooks · components · pages
+    settings/ store · components · hooks
+  components/ui/  Avatar · Button · Input · Modal · Spinner · ThemeToggle · LanguageSwitcher
+  hooks/      useDebounce
+```
 
 ## Arranque
 
 ```bash
 npm install
-npm run dev      # http://localhost:5173
+cp .env.example .env   # completar con tu firebaseConfig web + URLs del backend
+npm run dev            # http://localhost:5173
 ```
 
-## Configurar Firebase (el único paso pendiente)
-
-1. Creá un proyecto en https://console.firebase.google.com
-2. **Authentication** → Sign-in method → activá **Email/Password**.
-3. **Firestore Database** → Crear (modo producción).
-4. **Storage** → Crear.
-5. Project settings → tus apps → **Web app** → copiá el objeto `firebaseConfig`.
-6. Pegá los valores en `.env` (basado en `.env.example`):
+### Variables de entorno (`.env`)
 
 ```
 VITE_FIREBASE_API_KEY=...
@@ -45,72 +75,18 @@ VITE_FIREBASE_PROJECT_ID=...
 VITE_FIREBASE_STORAGE_BUCKET=...
 VITE_FIREBASE_MESSAGING_SENDER_ID=...
 VITE_FIREBASE_APP_ID=...
+
+VITE_API_URL=http://localhost:3000
+VITE_SOCKET_URL=http://localhost:3000
 ```
 
-7. Reiniciá `npm run dev`. Listo.
+> Necesitás el [backend](https://github.com/Nahuelito97/orix-chat-api) corriendo para que funcione.
 
-> Toda la config vive en `.env` → `src/config/firebase.ts`. No hay que tocar código.
+## Scripts
 
-## Reglas de seguridad (pegar en la consola)
-
-**Firestore** (Rules):
-
-```
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-    match /users/{uid} {
-      allow read: if request.auth != null;
-      allow write: if request.auth.uid == uid;
-    }
-    match /chats/{uid} {
-      // ambos participantes actualizan la lista de chats
-      allow read, write: if request.auth != null;
-    }
-    match /messages/{id} {
-      allow read, write: if request.auth != null;
-    }
-    match /typing/{id} {
-      // indicador "escribiendo…"
-      allow read, write: if request.auth != null;
-    }
-  }
-}
-```
-
-**Storage** (Rules):
-
-```
-rules_version = '2';
-service firebase.storage {
-  match /b/{bucket}/o {
-    match /{allPaths=**} {
-      allow read: if true;
-      allow write: if request.auth != null;
-    }
-  }
-}
-```
-
-> Reglas pensadas para desarrollo. Antes de producción conviene acotar `chats`/`messages` a los participantes reales.
-
-## Modelo de datos (Firestore)
-
-```
-users/{uid}      → { id, username, name, email, bio, avatar, lastSeen }
-chats/{uid}      → { chatsData: [{ messageId, rId, lastMessage, updatedAt, messageSeen }] }
-messages/{msgId} → { messages: [{ sId, text?, image?, createdAt }] }
-typing/{msgId}   → { [uid]: timestamp }   // indicador "escribiendo…"
-```
-
-## Estructura
-
-```
-src/
-  config/firebase.ts      init + helpers de auth (signup/login/logout)
-  context/AppContext.tsx  estado global + suscripciones realtime
-  lib/upload.ts           subida a Storage
-  types/index.ts          tipos compartidos
-  pages/      Login · Chat · ProfileUpdate
-  components/ LeftSidebar · ChatBox · RightSidebar · Avatar
-```
+| Script | Qué hace |
+| --- | --- |
+| `npm run dev` | Servidor de desarrollo |
+| `npm run build` | Build de producción (`tsc -b` + `vite build`) |
+| `npm run lint` | ESLint |
+| `npm run preview` | Previsualiza el build |
