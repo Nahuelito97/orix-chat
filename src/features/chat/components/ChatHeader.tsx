@@ -10,6 +10,7 @@ interface Props {
   onBack: () => void
   onSearch: () => void
   onToggleMute: () => void
+  onCall: (video: boolean) => void
 }
 
 export default function ChatHeader({
@@ -19,6 +20,7 @@ export default function ChatHeader({
   onBack,
   onSearch,
   onToggleMute,
+  onCall,
 }: Props) {
   const { t } = useTranslation()
   const title = chatTitle(chat)
@@ -52,6 +54,24 @@ export default function ChatHeader({
         <p className="truncate font-medium leading-tight">{title}</p>
         <p className="text-xs text-content-muted">{status}</p>
       </div>
+      {!chat.isGroup && (
+        <>
+          <button
+            onClick={() => onCall(false)}
+            className="rounded-lg px-2 py-1 text-content-muted hover:bg-surface-variant hover:text-content"
+            title={t('call.audioCall')}
+          >
+            📞
+          </button>
+          <button
+            onClick={() => onCall(true)}
+            className="rounded-lg px-2 py-1 text-content-muted hover:bg-surface-variant hover:text-content"
+            title={t('call.videoCall')}
+          >
+            📹
+          </button>
+        </>
+      )}
       <button
         onClick={onToggleMute}
         className="rounded-lg px-2 py-1 text-content-muted hover:bg-surface-variant hover:text-content"

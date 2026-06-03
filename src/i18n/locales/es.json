@@ -90,6 +90,14 @@
     "deleteConversation": "Eliminar conversación",
     "confirmDelete": "¿Eliminar esta conversación para siempre?"
   },
+  "call": {
+    "audioCall": "Llamada de voz",
+    "videoCall": "Videollamada",
+    "incomingAudio": "Llamada de voz entrante…",
+    "incomingVideo": "Videollamada entrante…",
+    "calling": "Llamando…",
+    "inCall": "En llamada"
+  },
   "group": {
     "title": "Nuevo grupo",
     "name": "Nombre del grupo",

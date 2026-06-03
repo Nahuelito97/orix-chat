@@ -90,6 +90,14 @@
     "deleteConversation": "Delete conversation",
     "confirmDelete": "Delete this conversation forever?"
   },
+  "call": {
+    "audioCall": "Voice call",
+    "videoCall": "Video call",
+    "incomingAudio": "Incoming voice call…",
+    "incomingVideo": "Incoming video call…",
+    "calling": "Calling…",
+    "inCall": "In call"
+  },
   "group": {
     "title": "New group",
     "name": "Group name",

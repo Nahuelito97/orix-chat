@@ -17,6 +17,15 @@ export interface ServerEvents {
   }) => void
   'chat:bump': (p: { chatId: string }) => void
   'chat:gone': (p: { chatId: string }) => void
+  'call:incoming': (p: {
+    fromUserId: string
+    chatId: string
+    video: boolean
+  }) => void
+  'call:accepted': (p: { fromUserId: string }) => void
+  'call:rejected': (p: { fromUserId: string }) => void
+  'call:signal': (p: { fromUserId: string; data: unknown }) => void
+  'call:ended': (p: { fromUserId: string }) => void
 }
 
 /** Eventos que el cliente emite al servidor. */
@@ -45,6 +54,11 @@ export interface ClientEvents {
   'group:removeMember': (p: { chatId: string; userId: string }) => void
   'chat:leaveGroup': (p: { chatId: string }) => void
   'chat:delete': (p: { chatId: string }) => void
+  'call:invite': (p: { toUserId: string; chatId: string; video: boolean }) => void
+  'call:accept': (p: { toUserId: string }) => void
+  'call:reject': (p: { toUserId: string }) => void
+  'call:signal': (p: { toUserId: string; data: unknown }) => void
+  'call:end': (p: { toUserId: string }) => void
 }
 
 export type AppSocket = Socket<ServerEvents, ClientEvents>

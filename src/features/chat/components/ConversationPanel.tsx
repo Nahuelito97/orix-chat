@@ -13,6 +13,7 @@ import ReplyBar from './ReplyBar'
 import MessageComposer from './MessageComposer'
 import MessageSearch from './MessageSearch'
 import ForwardModal from './ForwardModal'
+import { callService } from '../../../services/call.service'
 import type { ChatMessage } from '../../../types'
 
 export default function ConversationPanel() {
@@ -154,6 +155,16 @@ export default function ConversationPanel() {
         onBack={closeChat}
         onSearch={() => setSearchOpen(true)}
         onToggleMute={() => toggleMute(activeChat.id)}
+        onCall={(video) => {
+          if (other) {
+            void callService.startCall(
+              other.id,
+              activeChat.id,
+              other.name || `@${other.username}`,
+              video,
+            )
+          }
+        }}
       />
       {searchOpen ? (
         <MessageSearch chatId={activeChat.id} onClose={() => setSearchOpen(false)} />
