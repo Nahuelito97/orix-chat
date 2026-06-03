@@ -1,0 +1,85 @@
+@import 'tailwindcss';
+
+/* ──────────────────────────────────────────────────────────
+   Orix — paleta índigo + peach/coral, con tema claro y oscuro.
+   Los tokens semánticos apuntan a variables --c-* que cambian
+   según [data-theme] en <html>. Clases: bg-bg, text-content, …
+   ────────────────────────────────────────────────────────── */
+@theme {
+  --color-bg: var(--c-bg);
+  --color-surface: var(--c-surface);
+  --color-surface-variant: var(--c-surface-variant);
+  --color-outline: var(--c-outline);
+
+  --color-content: var(--c-content);
+  --color-content-muted: var(--c-content-muted);
+
+  --color-primary: var(--c-primary);
+  --color-primary-pressed: var(--c-primary-pressed);
+  --color-secondary: var(--c-secondary);
+  --color-on-accent: var(--c-on-accent);
+
+  --color-success: #34d399;
+  --color-danger: #f87171;
+  --color-warn: #fbbf24;
+  --color-syncing: #56c6f5;
+  --color-inactive: var(--c-inactive);
+}
+
+/* Tema oscuro (default) — "Orix Dusk" */
+:root,
+[data-theme='dark'] {
+  --c-bg: #312c51;
+  --c-surface: #48426d;
+  --c-surface-variant: #565081;
+  --c-outline: #574f86;
+  --c-content: #f5f3fb;
+  --c-content-muted: #b9b3d6;
+  --c-primary: #f0c38e;
+  --c-primary-pressed: #e3a86e;
+  --c-secondary: #f1aa9b;
+  --c-on-accent: #2a2547;
+  --c-inactive: #9d97c0;
+}
+
+/* Tema claro — "Orix Dawn" */
+[data-theme='light'] {
+  --c-bg: #f3f1fa;
+  --c-surface: #ffffff;
+  --c-surface-variant: #ece9f6;
+  --c-outline: #d9d4ec;
+  --c-content: #2a2547;
+  --c-content-muted: #6b6593;
+  --c-primary: #e09a5f;
+  --c-primary-pressed: #cf8748;
+  --c-secondary: #ec8c79;
+  --c-on-accent: #ffffff;
+  --c-inactive: #b8b2d0;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--color-bg);
+  color: var(--color-content);
+  font-family: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto,
+    Helvetica, Arial, sans-serif;
+}
+
+/* Scrollbar acorde al tema */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-surface-variant);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
