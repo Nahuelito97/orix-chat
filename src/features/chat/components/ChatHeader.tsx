@@ -11,6 +11,7 @@ interface Props {
   onSearch: () => void
   onToggleMute: () => void
   onCall: (video: boolean) => void
+  onSummarize: () => void
 }
 
 export default function ChatHeader({
@@ -21,6 +22,7 @@ export default function ChatHeader({
   onSearch,
   onToggleMute,
   onCall,
+  onSummarize,
 }: Props) {
   const { t } = useTranslation()
   const title = chatTitle(chat)
@@ -79,6 +81,14 @@ export default function ChatHeader({
         aria-label={chat.muted ? t('chat.unmute') : t('chat.mute')}
       >
         {chat.muted ? '🔕' : '🔔'}
+      </button>
+      <button
+        onClick={onSummarize}
+        className="rounded-lg px-2 py-1 text-content-muted hover:bg-surface-variant hover:text-content"
+        title={t('ai.summarize')}
+        aria-label={t('ai.summarize')}
+      >
+        ✨
       </button>
       <button
         onClick={onSearch}

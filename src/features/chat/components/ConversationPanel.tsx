@@ -13,11 +13,13 @@ import ReplyBar from './ReplyBar'
 import MessageComposer from './MessageComposer'
 import MessageSearch from './MessageSearch'
 import ForwardModal from './ForwardModal'
+import Modal from '../../../components/ui/Modal'
 import { callService } from '../../../services/call.service'
+import { aiService } from '../../../services/ai.service'
 import type { ChatMessage } from '../../../types'
 
 export default function ConversationPanel() {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const { user } = useAuth()
   const activeChat = useChatStore((s) => s.activeChat)
   const typingUsers = useChatStore((s) => s.typingUsers)
@@ -44,6 +46,9 @@ export default function ConversationPanel() {
   const [uploading, setUploading] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
   const [forwarding, setForwarding] = useState<ChatMessage | null>(null)
+  const [summary, setSummary] = useState<string | null>(null)
+  const [summarizing, setSummarizing] = useState(false)
+  const [suggestions, setSuggestions] = useState<string[]>([])
   const lastTypingWrite = useRef(0)
   const typingOffTimer = useRef<ReturnType<typeof setTimeout>>(undefined)
 
@@ -146,6 +151,31 @@ export default function ConversationPanel() {
     setText('')
   }
 
+  async function summarizeChat() {
+    if (!activeChat) return
+    setSummary('')
+    setSummarizing(true)
+    try {
+      const res = await aiService.summarize(activeChat.id, i18n.resolvedLanguage ?? 'es')
+      setSummary(res.summary)
+    } catch {
+      setSummary(null)
+      toast.error(t('ai.error'))
+    } finally {
+      setSummarizing(false)
+    }
+  }
+
+  async function fetchSuggestions() {
+    if (!activeChat) return
+    try {
+      const res = await aiService.suggest(activeChat.id, i18n.resolvedLanguage ?? 'es')
+      setSuggestions(res.suggestions)
+    } catch {
+      toast.error(t('ai.error'))
+    }
+  }
+
   return (
     <div className="flex h-full flex-col bg-surface-variant/20">
       <ChatHeader
@@ -155,6 +185,7 @@ export default function ConversationPanel() {
         onBack={closeChat}
         onSearch={() => setSearchOpen(true)}
         onToggleMute={() => toggleMute(activeChat.id)}
+        onSummarize={summarizeChat}
         onCall={(video) => {
           if (other) {
             void callService.startCall(
@@ -186,6 +217,29 @@ export default function ConversationPanel() {
             onPin={(m) => pinMessage(m.id)}
             onForward={(m) => setForwarding(m)}
           />
+          {/* Sugerencias de IA */}
+          <div className="flex flex-wrap items-center gap-2 border-t border-outline bg-surface px-3 py-2">
+            <button
+              onClick={fetchSuggestions}
+              title={t('ai.suggest')}
+              className="shrink-0 rounded-full border border-outline px-2 py-1 text-xs text-content-muted transition hover:border-primary hover:text-primary"
+            >
+              💡 {t('ai.suggest')}
+            </button>
+            {suggestions.map((s, i) => (
+              <button
+                key={i}
+                onClick={() => {
+                  setText(s)
+                  setSuggestions([])
+                }}
+                className="rounded-full bg-surface-variant px-3 py-1 text-xs transition hover:bg-primary/15"
+              >
+                {s}
+              </button>
+            ))}
+          </div>
+
           <ReplyBar editing={editing} replyTo={replyTo} onCancel={cancelBar} />
           <MessageComposer
             value={text}
@@ -206,6 +260,18 @@ export default function ConversationPanel() {
         onClose={() => setForwarding(null)}
         onPick={(chatId) => forwarding && forwardMessage(chatId, forwarding)}
       />
+
+      <Modal
+        open={summary !== null}
+        title={t('ai.summaryTitle')}
+        onClose={() => setSummary(null)}
+      >
+        {summarizing ? (
+          <p className="text-content-muted">{t('ai.summarizing')}</p>
+        ) : (
+          <p className="whitespace-pre-wrap text-sm">{summary}</p>
+        )}
+      </Modal>
     </div>
   )
 }

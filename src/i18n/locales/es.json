@@ -90,6 +90,14 @@
     "deleteConversation": "Eliminar conversación",
     "confirmDelete": "¿Eliminar esta conversación para siempre?"
   },
+  "ai": {
+    "summarize": "Resumir conversación",
+    "summaryTitle": "Resumen",
+    "summarizing": "Resumiendo…",
+    "suggest": "Sugerencias",
+    "translate": "Traducir",
+    "error": "La IA no está disponible ahora."
+  },
   "call": {
     "audioCall": "Llamada de voz",
     "videoCall": "Videollamada",

@@ -6,23 +6,27 @@ const REACTION_EMOJIS = ['👍', '❤️', '😂', '😮', '😢', '🙏']
 interface Props {
   mine: boolean
   pinned: boolean
+  canTranslate: boolean
   onReply: () => void
   onEdit: () => void
   onDelete: () => void
   onReact: (emoji: string) => void
   onPin: () => void
   onForward: () => void
+  onTranslate: () => void
 }
 
 export default function MessageActions({
   mine,
   pinned,
+  canTranslate,
   onReply,
   onEdit,
   onDelete,
   onReact,
   onPin,
   onForward,
+  onTranslate,
 }: Props) {
   const { t } = useTranslation()
   const [pickerOpen, setPickerOpen] = useState(false)
@@ -61,6 +65,15 @@ export default function MessageActions({
       >
         📌
       </button>
+      {canTranslate && (
+        <button
+          onClick={onTranslate}
+          className="rounded p-1 text-content-muted hover:text-content"
+          title={t('ai.translate')}
+        >
+          🌐
+        </button>
+      )}
       {mine && (
         <>
           <button

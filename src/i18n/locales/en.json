@@ -90,6 +90,14 @@
     "deleteConversation": "Delete conversation",
     "confirmDelete": "Delete this conversation forever?"
   },
+  "ai": {
+    "summarize": "Summarize conversation",
+    "summaryTitle": "Summary",
+    "summarizing": "Summarizing…",
+    "suggest": "Suggestions",
+    "translate": "Translate",
+    "error": "AI is unavailable right now."
+  },
   "call": {
     "audioCall": "Voice call",
     "videoCall": "Video call",

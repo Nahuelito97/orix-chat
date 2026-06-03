@@ -1,5 +1,8 @@
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { toast } from 'react-toastify'
 import { formatTime } from '../utils/chat'
+import { aiService } from '../../../services/ai.service'
 import MessageActions from './MessageActions'
 import type { ChatMessage } from '../../../types'
 
@@ -32,10 +35,24 @@ export default function MessageBubble({
   onPin,
   onForward,
 }: Props) {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
+  const [translation, setTranslation] = useState<string | null>(null)
   const senderName = (s: { name: string; username: string }) =>
     s.name || `@${s.username}`
   const tick = seen ? '✓✓' : delivered ? '✓✓' : '✓'
+
+  async function handleTranslate() {
+    if (!msg.text) return
+    try {
+      const { translation: tr } = await aiService.translate(
+        msg.text,
+        i18n.resolvedLanguage ?? 'es',
+      )
+      setTranslation(tr)
+    } catch {
+      toast.error(t('ai.error'))
+    }
+  }
 
   return (
     <div className={`group flex ${mine ? 'justify-end' : 'justify-start'}`}>
@@ -94,6 +111,16 @@ export default function MessageBubble({
             <p className="whitespace-pre-wrap break-words">{msg.text}</p>
           )}
 
+          {translation && (
+            <p
+              className={`mt-1 border-t pt-1 text-sm italic ${
+                mine ? 'border-on-accent/20' : 'border-outline'
+              }`}
+            >
+              🌐 {translation}
+            </p>
+          )}
+
           <p
             className={`mt-1 flex items-center justify-end gap-1 text-[10px] ${
               mine ? 'text-on-accent/70' : 'text-content-muted'
@@ -141,12 +168,14 @@ export default function MessageBubble({
         <MessageActions
           mine={mine}
           pinned={msg.pinned}
+          canTranslate={!!msg.text}
           onReply={onReply}
           onEdit={onEdit}
           onDelete={onDelete}
           onReact={onReact}
           onPin={onPin}
           onForward={onForward}
+          onTranslate={handleTranslate}
         />
       )}
     </div>
