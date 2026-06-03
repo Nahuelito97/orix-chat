@@ -78,6 +78,8 @@ export default function MessageBubble({
             <p className="italic opacity-60">{t('chat.messageDeleted')}</p>
           ) : msg.image ? (
             <img src={msg.image} alt="" className="max-h-60 rounded-lg" />
+          ) : msg.audioUrl ? (
+            <audio controls src={msg.audioUrl} className="max-w-[220px]" />
           ) : msg.fileUrl ? (
             <a
               href={msg.fileUrl}

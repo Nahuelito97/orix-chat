@@ -112,6 +112,27 @@ export default function ConversationPanel() {
     }
   }
 
+  function pickGif(url: string) {
+    sendMessage({ image: url, replyToId: replyTo?.id })
+    setReplyTo(null)
+  }
+
+  async function sendVoice(blob: Blob) {
+    setUploading(true)
+    try {
+      const file = new File([blob], `voice-${Date.now()}.webm`, {
+        type: 'audio/webm',
+      })
+      const url = await uploadFile(file, 'audio')
+      sendMessage({ audioUrl: url, replyToId: replyTo?.id })
+      setReplyTo(null)
+    } catch {
+      toast.error(t('chat.imageError'))
+    } finally {
+      setUploading(false)
+    }
+  }
+
   function startEdit(msg: ChatMessage) {
     setEditing(msg)
     setReplyTo(null)
@@ -163,6 +184,8 @@ export default function ConversationPanel() {
             onSubmit={submit}
             onPickImage={pickImage}
             onPickFile={pickAttachment}
+            onPickGif={pickGif}
+            onSendVoice={sendVoice}
           />
         </>
       )}

@@ -27,6 +27,7 @@ export interface ClientEvents {
     chatId: string
     text?: string
     image?: string
+    audioUrl?: string
     fileUrl?: string
     fileName?: string
     replyToId?: string

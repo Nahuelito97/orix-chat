@@ -1,7 +1,15 @@
-import { useRef, useState, type ClipboardEvent, type DragEvent, type KeyboardEvent } from 'react'
+import {
+  useState,
+  type ClipboardEvent,
+  type DragEvent,
+  type KeyboardEvent,
+} from 'react'
 import { useTranslation } from 'react-i18next'
+import { toast } from 'react-toastify'
 import Button from '../../../components/ui/Button'
 import EmojiPicker from './EmojiPicker'
+import GifPicker from './GifPicker'
+import { useVoiceRecorder } from '../hooks/useVoiceRecorder'
 
 interface Props {
   value: string
@@ -11,6 +19,8 @@ interface Props {
   onSubmit: () => void
   onPickImage: (file: File) => void
   onPickFile: (file: File) => void
+  onPickGif: (url: string) => void
+  onSendVoice: (blob: Blob) => void
 }
 
 export default function MessageComposer({
@@ -21,23 +31,25 @@ export default function MessageComposer({
   onSubmit,
   onPickImage,
   onPickFile,
+  onPickGif,
+  onSendVoice,
 }: Props) {
   const { t } = useTranslation()
   const [emojiOpen, setEmojiOpen] = useState(false)
+  const [gifOpen, setGifOpen] = useState(false)
   const [dragging, setDragging] = useState(false)
-  const textareaRef = useRef<HTMLTextAreaElement>(null)
-
-  function autoResize(el: HTMLTextAreaElement) {
-    el.style.height = 'auto'
-    el.style.height = `${Math.min(el.scrollHeight, 140)}px`
-  }
+  const recorder = useVoiceRecorder()
 
   function handleKeyDown(e: KeyboardEvent<HTMLTextAreaElement>) {
-    // Enter envía; Shift+Enter hace salto de línea.
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
       onSubmit()
     }
+  }
+
+  function autoResize(el: HTMLTextAreaElement) {
+    el.style.height = 'auto'
+    el.style.height = `${Math.min(el.scrollHeight, 140)}px`
   }
 
   function firstImage(files?: FileList | null): File | undefined {
@@ -60,22 +72,35 @@ export default function MessageComposer({
     }
   }
 
-  function handleImage(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0]
-    e.target.value = ''
-    if (file) onPickImage(file)
+  async function startRecording() {
+    const ok = await recorder.start()
+    if (!ok) toast.error(t('chat.micDenied'))
   }
 
-  function handleAttachment(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0]
-    e.target.value = ''
-    if (file) onPickFile(file)
+  async function stopAndSend() {
+    const blob = await recorder.stop()
+    if (blob) onSendVoice(blob)
   }
 
-  function insertEmoji(emoji: string) {
-    onChange(value + emoji)
-    setEmojiOpen(false)
-    textareaRef.current?.focus()
+  // ── Barra de grabación de voz ──
+  if (recorder.recording) {
+    const mm = String(Math.floor(recorder.seconds / 60)).padStart(2, '0')
+    const ss = String(recorder.seconds % 60).padStart(2, '0')
+    return (
+      <div className="flex items-center gap-3 border-t border-outline bg-surface px-4 py-3">
+        <span className="h-3 w-3 animate-pulse rounded-full bg-danger" />
+        <span className="flex-1 font-mono text-sm">
+          {t('chat.recording')} {mm}:{ss}
+        </span>
+        <button
+          onClick={recorder.cancel}
+          className="rounded-lg px-3 py-1.5 text-sm text-content-muted hover:text-danger"
+        >
+          {t('common.cancel')}
+        </button>
+        <Button onClick={stopAndSend}>{t('chat.send')}</Button>
+      </div>
+    )
   }
 
   return (
@@ -90,45 +115,65 @@ export default function MessageComposer({
       }}
       onDragLeave={() => setDragging(false)}
       onDrop={handleDrop}
-      className={`relative flex items-end gap-2 border-t bg-surface px-3 py-3 ${
+      className={`relative flex items-end gap-1 border-t bg-surface px-3 py-3 ${
         dragging ? 'border-primary bg-primary/5' : 'border-outline'
       }`}
     >
       <button
         type="button"
         onClick={() => setEmojiOpen((o) => !o)}
-        className="rounded-lg px-2 py-1.5 text-xl text-content-muted hover:text-primary"
+        className="rounded-lg px-1.5 py-1.5 text-xl text-content-muted hover:text-primary"
         title="Emojis"
       >
         😊
       </button>
       {emojiOpen && (
-        <EmojiPicker onSelect={insertEmoji} onClose={() => setEmojiOpen(false)} />
+        <EmojiPicker
+          onSelect={(e) => {
+            onChange(value + e)
+            setEmojiOpen(false)
+          }}
+          onClose={() => setEmojiOpen(false)}
+        />
       )}
 
-      <label className="cursor-pointer rounded-lg px-2 py-1.5 text-xl text-content-muted hover:text-primary" title="Imagen">
-        🖼️
-        <input
-          type="file"
-          accept="image/*"
-          hidden
-          onChange={handleImage}
-          disabled={uploading}
+      <button
+        type="button"
+        onClick={() => setGifOpen((o) => !o)}
+        className="rounded-lg px-1.5 py-1.5 text-xs font-bold text-content-muted hover:text-primary"
+        title="GIF"
+      >
+        GIF
+      </button>
+      {gifOpen && (
+        <GifPicker
+          onPick={(url) => {
+            onPickGif(url)
+            setGifOpen(false)
+          }}
+          onClose={() => setGifOpen(false)}
         />
+      )}
+
+      <label className="cursor-pointer rounded-lg px-1.5 py-1.5 text-xl text-content-muted hover:text-primary" title="Imagen">
+        🖼️
+        <input type="file" accept="image/*" hidden disabled={uploading} onChange={(e) => {
+          const f = e.target.files?.[0]
+          e.target.value = ''
+          if (f) onPickImage(f)
+        }} />
       </label>
 
-      <label className="cursor-pointer rounded-lg px-2 py-1.5 text-xl text-content-muted hover:text-primary" title="Archivo">
+      <label className="cursor-pointer rounded-lg px-1.5 py-1.5 text-xl text-content-muted hover:text-primary" title="Archivo">
         📎
-        <input
-          type="file"
-          hidden
-          onChange={handleAttachment}
-          disabled={uploading}
-        />
+        <input type="file" hidden disabled={uploading} onChange={(e) => {
+          const f = e.target.files?.[0]
+          e.target.value = ''
+          if (f) onPickFile(f)
+        }} />
       </label>
 
       <textarea
-        ref={textareaRef}
         rows={1}
         value={value}
         onChange={(e) => {
@@ -137,15 +182,24 @@ export default function MessageComposer({
         }}
         onKeyDown={handleKeyDown}
         onPaste={handlePaste}
-        placeholder={
-          uploading ? t('chat.uploadingImage') : t('chat.messagePlaceholder')
-        }
+        placeholder={uploading ? t('chat.uploadingImage') : t('chat.messagePlaceholder')}
         className="flex-1 resize-none rounded-xl border border-outline bg-bg px-3.5 py-2.5 text-sm outline-none placeholder:text-inactive focus:border-primary"
       />
 
-      <Button type="submit" disabled={uploading || !value.trim()}>
-        {editing ? t('common.save') : t('chat.send')}
-      </Button>
+      {value.trim() || editing ? (
+        <Button type="submit" disabled={uploading}>
+          {editing ? t('common.save') : t('chat.send')}
+        </Button>
+      ) : (
+        <button
+          type="button"
+          onClick={startRecording}
+          className="rounded-lg px-2 py-1.5 text-xl text-content-muted hover:text-primary"
+          title={t('chat.recordVoice')}
+        >
+          🎙️
+        </button>
+      )}
     </form>
   )
 }

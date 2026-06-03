@@ -46,6 +46,7 @@ export interface ChatMessage {
   sender: UserMini
   text: string | null
   image: string | null
+  audioUrl: string | null
   fileUrl: string | null
   fileName: string | null
   pinned: boolean

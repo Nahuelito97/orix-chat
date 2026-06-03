@@ -4,6 +4,7 @@ export const env = {
     url: import.meta.env.VITE_API_URL ?? 'http://localhost:3000',
     socketUrl: import.meta.env.VITE_SOCKET_URL ?? 'http://localhost:3000',
   },
+  giphyKey: import.meta.env.VITE_GIPHY_KEY ?? '',
   firebase: {
     apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
     authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,

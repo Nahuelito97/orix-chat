@@ -65,6 +65,7 @@ export function useChatActions() {
     (input: {
       text?: string
       image?: string
+      audioUrl?: string
       fileUrl?: string
       fileName?: string
       replyToId?: string
