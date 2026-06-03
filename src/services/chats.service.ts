@@ -3,6 +3,7 @@ import type { ChatMessage, ChatSummary } from '../types'
 
 export const chatsService = {
   list: () => http.get<ChatSummary[]>('/chats'),
+  createSelf: () => http.post<{ id: string }>('/chats/self'),
   createDirect: (otherId: string) =>
     http.post<{ id: string }>('/chats/direct', { otherId }),
   createGroup: (name: string, memberIds: string[]) =>

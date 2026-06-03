@@ -36,6 +36,8 @@ export default function ProfilePanel() {
           <p className="text-sm text-content-muted">
             {t('chat.members', { count: activeChat.participants.length })}
           </p>
+        ) : activeChat.isSelf ? (
+          <p className="text-sm text-content-muted">{t('chat.savedHint')}</p>
         ) : (
           <p className="text-sm text-content-muted">@{other?.username}</p>
         )}

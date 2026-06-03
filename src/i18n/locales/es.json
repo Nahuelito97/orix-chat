@@ -96,7 +96,9 @@
     "archived": "Archivados",
     "temporary": "Mensaje temporal (se borra solo)",
     "usersSection": "Usuarios",
-    "messagesSection": "Mensajes"
+    "messagesSection": "Mensajes",
+    "savedMessages": "Mensajes guardados",
+    "savedHint": "Tus notas y archivos, solo para vos"
   },
   "bot": {
     "help": "Ayuda",

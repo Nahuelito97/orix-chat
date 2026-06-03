@@ -19,14 +19,16 @@ export function isUserOnline(
   return Date.now() - new Date(user.lastSeen).getTime() < ONLINE_THRESHOLD
 }
 
-/** Nombre a mostrar para un chat (grupo o 1-a-1). */
+/** Nombre a mostrar para un chat (grupo, 1-a-1 o uno mismo). */
 export function chatTitle(chat: ChatSummary, fallback = '...'): string {
+  if (chat.isSelf) return 'Mensajes guardados'
   if (chat.isGroup) return chat.name || 'Grupo'
   return chat.other?.name || `@${chat.other?.username ?? fallback}`
 }
 
 /** Avatar a mostrar para un chat. */
 export function chatAvatar(chat: ChatSummary): string | undefined {
+  if (chat.isSelf) return chat.participants[0]?.avatar
   return chat.isGroup ? (chat.avatar ?? undefined) : chat.other?.avatar
 }
 
@@ -36,4 +38,13 @@ export function formatTime(iso: string): string {
     hour: '2-digit',
     minute: '2-digit',
   })
+}
+
+/** Para la lista: hora si es hoy, fecha corta si no. */
+export function formatListTime(iso: string): string {
+  const d = new Date(iso)
+  const sameDay = d.toDateString() === new Date().toDateString()
+  return sameDay
+    ? d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    : d.toLocaleDateString([], { day: '2-digit', month: '2-digit' })
 }

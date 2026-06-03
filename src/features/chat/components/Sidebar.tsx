@@ -25,6 +25,7 @@ export default function Sidebar() {
     openChat,
     openChatById,
     openChatWithUser,
+    openSelfChat,
     togglePinChat,
     toggleArchiveChat,
   } = useChatActions()
@@ -73,6 +74,15 @@ export default function Sidebar() {
                 className="absolute right-0 top-9 z-10 w-44 overflow-hidden rounded-xl border border-outline bg-surface-variant shadow-xl"
                 onMouseLeave={() => setMenuOpen(false)}
               >
+                <button
+                  onClick={() => {
+                    setMenuOpen(false)
+                    void openSelfChat()
+                  }}
+                  className="block w-full px-4 py-2.5 text-left text-sm hover:bg-surface"
+                >
+                  {t('chat.savedMessages')}
+                </button>
                 <Link
                   to="/profile"
                   className="block px-4 py-2.5 text-sm hover:bg-surface"

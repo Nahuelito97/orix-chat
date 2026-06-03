@@ -96,7 +96,9 @@
     "archived": "Archived",
     "temporary": "Disappearing message",
     "usersSection": "Users",
-    "messagesSection": "Messages"
+    "messagesSection": "Messages",
+    "savedMessages": "Saved messages",
+    "savedHint": "Your notes and files, just for you"
   },
   "bot": {
     "help": "Help",

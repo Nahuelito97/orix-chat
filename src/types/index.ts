@@ -62,6 +62,7 @@ export interface ChatMessage {
 export interface ChatSummary {
   id: string
   isGroup: boolean
+  isSelf: boolean
   name: string | null
   avatar: string | null
   createdBy: string | null

@@ -62,6 +62,11 @@ export function useChatActions() {
     [openChatById],
   )
 
+  const openSelfChat = useCallback(async () => {
+    const { id } = await chatsService.createSelf()
+    await openChatById(id)
+  }, [openChatById])
+
   const sendMessage = useCallback(
     (input: {
       text?: string
@@ -139,6 +144,7 @@ export function useChatActions() {
     openChatById,
     closeChat,
     openChatWithUser,
+    openSelfChat,
     sendMessage,
     forwardMessage,
     pinMessage,
