@@ -49,6 +49,8 @@ export interface ClientEvents {
   read: (p: { chatId: string }) => void
   delivered: (p: { chatId: string }) => void
   'chat:mute': (p: { chatId: string }) => void
+  'chat:pin': (p: { chatId: string }) => void
+  'chat:archive': (p: { chatId: string }) => void
   'group:update': (p: { chatId: string; name?: string; avatar?: string }) => void
   'group:addMembers': (p: { chatId: string; memberIds: string[] }) => void
   'group:removeMember': (p: { chatId: string; userId: string }) => void

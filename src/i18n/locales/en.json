@@ -88,7 +88,12 @@
     "noResults": "No results.",
     "scrollToBottom": "Go to latest message",
     "deleteConversation": "Delete conversation",
-    "confirmDelete": "Delete this conversation forever?"
+    "confirmDelete": "Delete this conversation forever?",
+    "pinChat": "Pin chat",
+    "unpinChat": "Unpin chat",
+    "archive": "Archive",
+    "unarchive": "Unarchive",
+    "archived": "Archived"
   },
   "ai": {
     "summarize": "Summarize conversation",

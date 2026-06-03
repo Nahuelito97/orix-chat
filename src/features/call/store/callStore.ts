@@ -9,6 +9,7 @@ interface CallStore {
   video: boolean
   micOn: boolean
   camOn: boolean
+  screening: boolean
   localStream: MediaStream | null
   remoteStream: MediaStream | null
   set: (partial: Partial<CallStore>) => void
@@ -22,6 +23,7 @@ const initial = {
   video: false,
   micOn: true,
   camOn: true,
+  screening: false,
   localStream: null,
   remoteStream: null,
 }

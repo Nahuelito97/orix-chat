@@ -31,6 +31,7 @@ export default function CallOverlay() {
     video,
     micOn,
     camOn,
+    screening,
     localStream,
     remoteStream,
   } = useCallStore()
@@ -97,6 +98,14 @@ export default function CallOverlay() {
         {video && (
           <RoundBtn onClick={() => callService.toggleCam()}>
             {camOn ? '📹' : '🚫'}
+          </RoundBtn>
+        )}
+        {video && status === 'connected' && (
+          <RoundBtn
+            onClick={() => void callService.toggleScreen()}
+            variant={screening ? 'success' : 'neutral'}
+          >
+            🖥️
           </RoundBtn>
         )}
         <RoundBtn onClick={() => callService.hangup()} variant="danger">

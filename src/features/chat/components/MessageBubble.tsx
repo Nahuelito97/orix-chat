@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'react-toastify'
 import { formatTime } from '../utils/chat'
+import { formatText } from '../utils/format'
 import { aiService } from '../../../services/ai.service'
 import MessageActions from './MessageActions'
 import type { ChatMessage } from '../../../types'
@@ -108,7 +109,9 @@ export default function MessageBubble({
               <span className="truncate">{msg.fileName || t('chat.file')}</span>
             </a>
           ) : (
-            <p className="whitespace-pre-wrap break-words">{msg.text}</p>
+            <p className="whitespace-pre-wrap break-words">
+              {msg.text ? formatText(msg.text) : null}
+            </p>
           )}
 
           {translation && (

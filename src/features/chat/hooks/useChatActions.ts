@@ -107,6 +107,14 @@ export function useChatActions() {
     socketService.get()?.emit('chat:mute', { chatId })
   }, [])
 
+  const togglePinChat = useCallback((chatId: string) => {
+    socketService.get()?.emit('chat:pin', { chatId })
+  }, [])
+
+  const toggleArchiveChat = useCallback((chatId: string) => {
+    socketService.get()?.emit('chat:archive', { chatId })
+  }, [])
+
   const editMessage = useCallback((messageId: string, text: string) => {
     socketService.get()?.emit('message:edit', { messageId, text })
   }, [])
@@ -134,6 +142,8 @@ export function useChatActions() {
     forwardMessage,
     pinMessage,
     toggleMute,
+    togglePinChat,
+    toggleArchiveChat,
     editMessage,
     deleteMessage,
     toggleReaction,

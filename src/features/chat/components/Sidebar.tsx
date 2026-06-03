@@ -20,14 +20,19 @@ export default function Sidebar() {
   const { t } = useTranslation()
   const { logout } = useAuth()
   const { data: chats = [] } = useChats()
-  const { openChat, openChatWithUser } = useChatActions()
+  const { openChat, openChatWithUser, togglePinChat, toggleArchiveChat } =
+    useChatActions()
   const activeChat = useChatStore((s) => s.activeChat)
   const presence = useChatStore((s) => s.presence)
 
   const [term, setTerm] = useState('')
   const [menuOpen, setMenuOpen] = useState(false)
   const [groupOpen, setGroupOpen] = useState(false)
+  const [showArchived, setShowArchived] = useState(false)
   const search = useUserSearch(term)
+
+  const activeChats = chats.filter((c) => !c.archived)
+  const archivedChats = chats.filter((c) => c.archived)
 
   async function startChat(user: UserMini) {
     await openChatWithUser(user)
@@ -103,20 +108,46 @@ export default function Sidebar() {
           />
         ) : (
           <ul>
-            {chats.map((chat) => (
+            {activeChats.map((chat) => (
               <ChatListItem
                 key={chat.id}
                 chat={chat}
                 active={activeChat?.id === chat.id}
                 online={!chat.isGroup && isUserOnline(chat.other, presence)}
                 onClick={() => void openChat(chat)}
+                onPin={() => togglePinChat(chat.id)}
+                onArchive={() => toggleArchiveChat(chat.id)}
               />
             ))}
-            {chats.length === 0 && (
+            {activeChats.length === 0 && (
               <p className="px-4 py-8 text-center text-sm text-content-muted">
                 {t('chat.noChats')}
               </p>
             )}
+
+            {/* Archivados */}
+            {archivedChats.length > 0 && (
+              <li>
+                <button
+                  onClick={() => setShowArchived((v) => !v)}
+                  className="w-full px-4 py-2 text-left text-xs font-semibold uppercase tracking-wide text-content-muted hover:text-content"
+                >
+                  🗄 {t('chat.archived')} ({archivedChats.length}) {showArchived ? '▾' : '▸'}
+                </button>
+              </li>
+            )}
+            {showArchived &&
+              archivedChats.map((chat) => (
+                <ChatListItem
+                  key={chat.id}
+                  chat={chat}
+                  active={activeChat?.id === chat.id}
+                  online={!chat.isGroup && isUserOnline(chat.other, presence)}
+                  onClick={() => void openChat(chat)}
+                  onPin={() => togglePinChat(chat.id)}
+                  onArchive={() => toggleArchiveChat(chat.id)}
+                />
+              ))}
           </ul>
         )}
       </div>

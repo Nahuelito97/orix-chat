@@ -88,7 +88,12 @@
     "noResults": "Sin resultados.",
     "scrollToBottom": "Ir al último mensaje",
     "deleteConversation": "Eliminar conversación",
-    "confirmDelete": "¿Eliminar esta conversación para siempre?"
+    "confirmDelete": "¿Eliminar esta conversación para siempre?",
+    "pinChat": "Fijar chat",
+    "unpinChat": "Desfijar chat",
+    "archive": "Archivar",
+    "unarchive": "Desarchivar",
+    "archived": "Archivados"
   },
   "ai": {
     "summarize": "Resumir conversación",

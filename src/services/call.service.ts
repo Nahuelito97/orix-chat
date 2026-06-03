@@ -11,6 +11,7 @@ const ICE_CONFIG: RTCConfiguration = {
 
 let pc: RTCPeerConnection | null = null
 let pendingCandidates: RTCIceCandidateInit[] = []
+let cameraTrack: MediaStreamTrack | null = null // cámara guardada mientras se comparte pantalla
 
 const store = () => useCallStore.getState()
 
@@ -156,5 +157,39 @@ export const callService = {
     if (!track) return
     track.enabled = !track.enabled
     store().set({ camOn: track.enabled })
+  },
+
+  /** Comparte/deja de compartir pantalla en una videollamada. */
+  async toggleScreen() {
+    if (!pc) return
+    const sender = pc.getSenders().find((s) => s.track?.kind === 'video')
+    if (!sender) return // llamada solo de audio: no hay pista de video
+
+    if (store().screening) {
+      // Volver a la cámara.
+      if (cameraTrack) await sender.replaceTrack(cameraTrack)
+      this.swapLocalVideo(cameraTrack)
+      cameraTrack = null
+      store().set({ screening: false })
+      return
+    }
+
+    const display = await navigator.mediaDevices.getDisplayMedia({ video: true })
+    const screenTrack = display.getVideoTracks()[0]
+    cameraTrack = sender.track ?? null
+    await sender.replaceTrack(screenTrack)
+    this.swapLocalVideo(screenTrack)
+    store().set({ screening: true })
+    // Si el usuario corta desde la UI del navegador, restauramos.
+    screenTrack.onended = () => void this.toggleScreen()
+  },
+
+  /** Refleja la pista de video activa en el preview local. */
+  swapLocalVideo(track: MediaStreamTrack | null) {
+    const local = store().localStream
+    if (!local || !track) return
+    local.getVideoTracks().forEach((t) => local.removeTrack(t))
+    local.addTrack(track)
+    store().set({ localStream: local })
   },
 }

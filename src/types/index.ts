@@ -66,6 +66,8 @@ export interface ChatSummary {
   createdBy: string | null
   myRole: 'admin' | 'member'
   muted: boolean
+  pinned: boolean
+  archived: boolean
   updatedAt: string
   participants: Participant[]
   /** El otro usuario en chats 1-a-1 (null en grupos). */
